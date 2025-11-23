@@ -11,8 +11,12 @@ import MySQLConnector from './db/Connect.js';
 async function main(): Promise<void> {
 	const db: MySQLConnector = MySQLConnector.getInstance() as MySQLConnector;
 
-	await db.connect();
-    await apiConnect();
+
+	await Promise.allSettled([
+		db.connect(),
+		apiConnect(),
+	]);
+
 }
 
 main().then(() => {
