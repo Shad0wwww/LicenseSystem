@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model License {
+  id        Int @id @default(autoincrement())
+  product   String @db.VarChar(100)
+  key       String @unique @db.VarChar(64)
+  issuedAt  DateTime @default(now())
+  max_activations Int @default(1)
+  expiresAt DateTime
+
+
+  activations Activation[]
+}
+
+model Activation {
+  id         Int @id @default(autoincrement())
+  licenseId  Int
+  activatedAt DateTime @default(now())
+  deviceInfo String @db.VarChar(255)
+  user_name  String @db.VarChar(100)
+
+
+  license_id License? @relation(fields: [licenseId], references: [id])
+
+}
