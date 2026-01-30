@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output = "../generated/prisma"
 }
 
 datasource db {
@@ -14,7 +15,21 @@ model License {
   max_activations Int @default(1)
   expiresAt DateTime
 
+  userId    Int
+  user      User @relation(fields: [userId], references: [id])
 
+  activations Activation[] 
+}
+
+model User {
+  id       Int @id @default(autoincrement())
+  email    String @unique @db.VarChar(255)
+  password String @db.VarChar(255)
+  user_name     String @db.VarChar(100)
+
+  createdAt DateTime @default(now())
+
+  licenses License[]
   activations Activation[]
 }
 
@@ -24,8 +39,9 @@ model Activation {
   activatedAt DateTime @default(now())
   deviceInfo String @db.VarChar(255)
   user_name  String @db.VarChar(100)
-
+  userId     Int
+  user       User @relation(fields: [userId], references: [id])
 
   license_id License? @relation(fields: [licenseId], references: [id])
 
-}
+} 

@@ -5,15 +5,15 @@ dotenv.config({
 });
 
 import apiConnect from './utils/Express.js';
-import MySQLConnector from './db/Connect.js';
 
 
 async function main(): Promise<void> {
-	const db: MySQLConnector = MySQLConnector.getInstance() as MySQLConnector;
-
+	const { prisma } = await import('./lib/prisma.js');
 
 	await Promise.allSettled([
-		db.connect(),
+		prisma.$connect().then(() => {
+			console.log('✔️  Connected to the database');
+		}),
 		apiConnect(),
 	]);
 
