@@ -20,7 +20,10 @@ type DiscordUser = {
 
 
 
-export async function Callback(req: Request, res: Response): Promise<Response> {
+export async function Callback(
+    req: Request, 
+    res: Response
+): Promise<Response> {
 
     const code: string = req.query.code as string;
     const state: string = req.query.state as string;
@@ -40,7 +43,7 @@ export async function Callback(req: Request, res: Response): Promise<Response> {
     }
 
     try {
-        await createUserTable(discordUser, state);
+        await createUserTableOrUpdate(discordUser, state);
         return res.status(200).send("Callback received");
     } catch (error) {
         console.error('Error generating Discord Auth URL:', error);
@@ -49,7 +52,10 @@ export async function Callback(req: Request, res: Response): Promise<Response> {
 }
 
 
-async function createUserTable(discordUser: DiscordUser, state: string): Promise<void> {
+async function createUserTableOrUpdate(
+    discordUser: DiscordUser, 
+    state: string
+): Promise<void> {
     const { prisma } = await import('../../../../lib/prisma.js');
 
     await prisma.$transaction(async (tx) => {

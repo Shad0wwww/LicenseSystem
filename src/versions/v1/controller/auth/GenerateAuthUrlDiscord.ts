@@ -2,7 +2,10 @@ import { Request, Response } from 'express';
 import { DiscordScopes, generateAuthLink } from '../../../../utils/Discord.js';
 
 
-export async function GenerateAuthUrlDiscord(_req: Request, res: Response): Promise<Response> {
+export async function GenerateAuthUrlDiscord(
+    _req: Request, 
+    res: Response
+): Promise<Response> {
     const state = crypto.getRandomValues(new Uint8Array(16)).join('');
 
     const { prisma } = await import('../../../../lib/prisma.js');
