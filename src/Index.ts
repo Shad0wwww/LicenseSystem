@@ -1,4 +1,5 @@
 import * as dotenv from 'dotenv';
+const { prisma } = await import('./lib/prisma.js');
 
 dotenv.config({ 
 	path: ['.env']
@@ -8,7 +9,6 @@ import apiConnect from './utils/Express.js';
 
 
 async function main(): Promise<void> {
-	const { prisma } = await import('./lib/prisma.js');
 
 	await Promise.allSettled([
 		prisma.$connect().then(() => {
@@ -27,10 +27,12 @@ main().then(() => {
 
 process.on('uncaughtException', err => {
 	console.error('Uncaught exception: ', err);
+	prisma.$disconnect();
 	process.exit(1);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
 	console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+	prisma.$disconnect();
 	process.exit(1);
 });

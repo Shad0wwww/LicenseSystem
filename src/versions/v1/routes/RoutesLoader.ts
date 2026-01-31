@@ -1,19 +1,15 @@
-
-import type * as Core from 'express-serve-static-core';
+import { Request, Response, Express } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-
-
-
-export default function (app: Core.Express) {
+export default function (app: Express) {
     app.get('/v1', (
-        _req: Core.Request,
-        res: Core.Response
+        _req: Request,
+        res: Response
     ) => {
         res.json({
             message: 'Welcome to API version 1'
@@ -28,7 +24,7 @@ export default function (app: Core.Express) {
             return;
         }
         
-        const routeFile = path.join('file://', __dirname, file);
+        const routeFile = pathToFileURL(path.join(__dirname, file)).href;
         console.log(`⌛   ${file}`);
 
         void import(routeFile)

@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  output = "../generated/prisma"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -8,39 +8,39 @@ datasource db {
 }
 
 model License {
-  id        Int @id @default(autoincrement())
-  product   String @db.VarChar(100)
-  key       String @unique @db.VarChar(64)
-  issuedAt  DateTime @default(now())
-  max_activations Int @default(1)
-  expiresAt DateTime
+  id              Int      @id @default(autoincrement())
+  product         String   @db.VarChar(100)
+  key             String   @unique @db.VarChar(64)
+  issuedAt        DateTime @default(now())
+  max_activations Int      @default(1)
+  expiresAt       DateTime
 
-  userId    Int
-  user      User @relation(fields: [userId], references: [id])
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
 
-  activations Activation[] 
+  activations Activation[]
 }
 
 model User {
-  id       Int @id @default(autoincrement())
-  email    String @unique @db.VarChar(255)
-  user_name     String @db.VarChar(100)
+  id        Int    @id @default(autoincrement())
+  email     String @unique @db.VarChar(255)
+  user_name String @db.VarChar(100)
+  state     String @db.VarChar(255)
 
   createdAt DateTime @default(now())
 
-  licenses License[]
+  licenses    License[]
   activations Activation[]
 }
 
 model Activation {
-  id         Int @id @default(autoincrement())
-  licenseId  Int
+  id          Int      @id @default(autoincrement())
+  licenseId   Int
   activatedAt DateTime @default(now())
-  deviceInfo String @db.VarChar(255)
-  user_name  String @db.VarChar(100)
-  userId     Int
-  user       User @relation(fields: [userId], references: [id])
+  deviceInfo  String   @db.VarChar(255)
+  user_name   String   @db.VarChar(100)
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
 
   license_id License? @relation(fields: [licenseId], references: [id])
-
-} 
+}

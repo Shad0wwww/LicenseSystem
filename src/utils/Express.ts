@@ -1,13 +1,13 @@
 import bodyparser from 'body-parser';
 import cors from 'cors';
-import type * as Core from 'express-serve-static-core';
+import { Response, Request, Express } from 'express';
 import express from 'express';
 import { createServer } from 'http'
 
 import routes from '../versions/v1/routes/RoutesLoader.js';
 
 
-const app = express() as Core.Express;
+const app = express() as Express;
 
 const corsOptions = {
     origin: ['http://localhost:3000', 'http://localhost:3030',],
@@ -25,8 +25,8 @@ export default async function apiConnect(): Promise<void> {
         err: {
             message: string
         },
-        _req: Core.Request,
-        res: Core.Response,
+        _req: Request,
+        res: Response,
         _next: any
     ) => {
         res.status(422).send(
