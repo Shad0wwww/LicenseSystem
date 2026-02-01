@@ -22,25 +22,40 @@ model License {
 }
 
 model User {
-  id        Int    @id @default(autoincrement())
-  email     String @unique @db.VarChar(255)
-  user_name String @db.VarChar(100)
-  state     String @db.VarChar(255)
+  id        Int     @id @default(autoincrement())
+  email     String  @unique @db.VarChar(255)
+  user_name String  @db.VarChar(100)
+  state     String? @db.VarChar(255)
 
   createdAt DateTime @default(now())
 
   licenses    License[]
   activations Activation[]
+  accounts    Account[]
+}
+
+model Account {
+  id                Int    @id @default(autoincrement())
+  userId            Int
+  // e.g. 'discord', 'google', etc.
+  provider          String
+  // e.g. 'discord', 'google', etc.
+  providerAccountId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
 }
 
 model Activation {
   id          Int      @id @default(autoincrement())
   licenseId   Int
   activatedAt DateTime @default(now())
+
   deviceInfo  String   @db.VarChar(255)
-  user_name   String   @db.VarChar(100)
+  hwid        String?   @db.VarChar(255)
+
   userId      Int
   user        User     @relation(fields: [userId], references: [id])
-
-  license_id License? @relation(fields: [licenseId], references: [id])
+  license     License  @relation(fields: [licenseId], references: [id])
 }
