@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { DiscordScopes, generateAuthLink } from '../../../../utils/Discord.js';
+import { DiscordScopes, generateAuthLink } from '../../../../../utils/Discord.js';
 
 
 export async function GenerateAuthUrlDiscord(

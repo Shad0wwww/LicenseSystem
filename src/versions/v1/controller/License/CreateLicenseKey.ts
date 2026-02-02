@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
 import { createHash, randomBytes } from 'crypto';
 import { sendMail } from '../../../../services/SendMailer.js';
+import jwt from 'jsonwebtoken';
 const { prisma } = await import('../../../../lib/prisma.js');
 
 
 interface CreateLicenseInput {
     product: string;
-    userId: number;
     max_activations: number;
     expiresAt: string; 
 }
@@ -15,25 +15,28 @@ export async function CreateLicenseKey(
     req: Request, res: Response
 ): Promise<Response> {
 
-    console.log('Modtaget anmodning om oprettelse af licens');  
-    console.log('Forespørgselsdata:', req.body);
+    const auth_token = req.cookies['auth_token'];
 
+    if (!auth_token) {
+        return res.status(401).json({
+            error: 'Uautoriseret adgang'
+        });
+    }
 
     try {
         const { 
             product, 
-            userId, 
             max_activations, 
             expiresAt 
         }: CreateLicenseInput = req.body;
 
-        if (!product || !userId || !max_activations || !expiresAt) {
+        if (!product || !req.userId || !max_activations || !expiresAt) {
             return res.status(400).json({ 
                 error: 'Manglende felter i forespørgslen' 
             });
         }
 
-        const userExists = await DoesUserExist(parseInt(userId.toString()));
+        const userExists = await DoesUserExist(parseInt(req.userId.toString()));
 
 
         if (!userExists) {
@@ -49,14 +52,14 @@ export async function CreateLicenseKey(
         await prisma.license.create({
             data: {
                 product,
-                userId: parseInt(userId.toString()),
+                userId: parseInt(req.userId.toString()),
                 key: hashedKey,
                 expiresAt: new Date(expiresAt), 
                 max_activations: parseInt(max_activations.toString()),
             }
         });
 
-        const userEmail = await getUserEmail(parseInt(userId.toString()));
+        const userEmail = await getUserEmail(parseInt(req.userId.toString()));
 
         if (userEmail) {
             await sendMail(userEmail, rawKey);

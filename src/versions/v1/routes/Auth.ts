@@ -1,7 +1,9 @@
 
 import express, { Express } from 'express';
-import { GenerateAuthUrlDiscord } from '../controller/auth/GenerateAuthUrlDiscord.js';
-import { Callback } from '../controller/auth/Callback.js';
+import { GenerateAuthUrlDiscord } from '../controller/auth/discord/GenerateAuthUrlDiscord.js';
+import { Callback } from '../controller/auth/discord/Callback.js';
+
+
 
 
 export default function (app: Express) {

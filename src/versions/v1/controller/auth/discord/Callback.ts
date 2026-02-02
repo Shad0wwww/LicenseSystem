@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import getUserinformation from '../../../../utils/Discord.js';
+import jwt from 'jsonwebtoken';
+import getUserinformation from '../../../../../utils/Discord.js';
 
 type DiscordUser = {
     id: string;
@@ -25,8 +26,6 @@ export async function Callback(
     const cookie: string = req.cookies['oauth_state'];
     const state: string = req.query.state as string;
 
-    console.log('Callback modtaget med kode:', cookie);
-
     if (!code || !cookie) {
         return res.status(400).send({ 
             error: 'Missing code or cookie' 
@@ -39,6 +38,7 @@ export async function Callback(
         });
     }
 
+
     const discordUser = await getUserinformation(code) as DiscordUser;
 
     if (!discordUser) {
@@ -49,7 +49,15 @@ export async function Callback(
 
     try {
 
-        await createUserTableOrUpdate(discordUser);
+        var user = await createUserTableOrUpdate(discordUser);
+        const token = generateJsonWebToken(user.id);
+
+        res.cookie('auth_token', token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
 
         res.clearCookie('oauth_state');
 
@@ -65,7 +73,7 @@ export async function Callback(
 async function createUserTableOrUpdate(
     discordUser: DiscordUser
 ) {
-    const { prisma } = await import('../../../../lib/prisma.js');
+    const { prisma } = await import('../../../../../lib/prisma.js');
 
     return await prisma.$transaction(async (tx) => {
 
@@ -96,4 +104,12 @@ async function createUserTableOrUpdate(
 
         return user;
     });
+}
+
+function generateJsonWebToken(userId: number): string {
+    return jwt.sign(
+        { userId }, 
+        process.env.JWT_SECRET as string, 
+        { expiresIn: '7d' }
+    );
 }
