@@ -1,6 +1,7 @@
 
 ### Todo
 - [x] Gem en hashed license key på DB, hvor brugeren får en raw key
+- [x] Benyt JWT, til at gemme folks ID lokalt i en cookie. 
 
 - [ ] Lav et Email system, til at sende mail med licenseskey
     - [ ] Husk ratelimiter 
