@@ -1,21 +1,9 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import getUserinformation from '../../../../../utils/Discord.js';
+import { DiscordUser } from '../../../../../types/DiscordUserType.js';
 
-type DiscordUser = {
-    id: string;
-    username: string;
-    discord_id: string;
-    discriminator: string;
-    avatar: string;
-    email: string;
-    verified: boolean;
-    locale: string;
-    mfa_enabled: boolean;
-    flags: number;
-    premium_type: number;
-    public_flags: number;
-};
+
 
 export async function Callback(
     req: Request, 
@@ -49,7 +37,7 @@ export async function Callback(
 
     try {
 
-        var user = await createUserTableOrUpdate(discordUser);
+        var user = await req.app.locals.userManager.findOrCreateFromDiscord(discordUser);
         const token = generateJsonWebToken(user.id);
 
         res.cookie('auth_token', token, {
@@ -69,42 +57,6 @@ export async function Callback(
     }
 }
 
-
-async function createUserTableOrUpdate(
-    discordUser: DiscordUser
-) {
-    const { prisma } = await import('../../../../../lib/prisma.js');
-
-    return await prisma.$transaction(async (tx) => {
-
-        let user = await tx.user.upsert({
-            where: { email: discordUser.email },
-            update: { user_name: discordUser.username },
-            create: {
-                email: discordUser.email,
-                user_name: discordUser.username,
-
-            }
-        });
-
-        await tx.account.upsert({
-            where: {
-                provider_providerAccountId: {
-                    provider: 'discord',
-                    providerAccountId: discordUser.id 
-                }
-            },
-            update: {}, 
-            create: {
-                userId: user.id,
-                provider: 'discord',
-                providerAccountId: discordUser.id
-            }
-        });
-
-        return user;
-    });
-}
 
 function generateJsonWebToken(userId: number): string {
     return jwt.sign(
