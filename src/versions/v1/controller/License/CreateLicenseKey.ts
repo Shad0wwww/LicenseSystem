@@ -1,9 +1,8 @@
 import { Request, Response } from 'express';
 import { createHash, randomBytes } from 'crypto';
 import { sendMail } from '../../../../services/SendMailer.js';
-import jwt from 'jsonwebtoken';
+import { UserManager } from '../../../../manager/UserManager.js';
 const { prisma } = await import('../../../../lib/prisma.js');
-
 
 interface CreateLicenseInput {
     product: string;
@@ -23,6 +22,8 @@ export async function CreateLicenseKey(
         });
     }
 
+    const userManager = new UserManager(prisma);
+
     try {
         const { 
             product, 
@@ -36,7 +37,7 @@ export async function CreateLicenseKey(
             });
         }
 
-        const userExists = await DoesUserExist(parseInt(req.userId.toString()));
+        const userExists = await userManager.DoesUserExist(parseInt(req.userId.toString()));
 
 
         if (!userExists) {
@@ -59,11 +60,13 @@ export async function CreateLicenseKey(
             }
         });
 
-        const userEmail = await getUserEmail(parseInt(req.userId.toString()));
+        const userEmail = await userManager.getUserEmail(parseInt(req.userId.toString()));
 
-        if (userEmail) {
-            await sendMail(userEmail, rawKey);
+        if (!userEmail) {
+            return res.status(401).json({ error: "Kunne ikke finde emailen" });
         }
+
+        await sendMail(userEmail, rawKey);
 
         return res.status(201).json({
             message: 'Gem denne nøgle sikkert, den vises kun én gang!',
@@ -83,25 +86,8 @@ export async function CreateLicenseKey(
     }
 }
 
-async function getUserEmail(
-    userId: number
-): Promise<string | null> {
-    const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { email: true }
-    }); 
-    return user ? user.email : null;
-}
 
-async function DoesUserExist(
-    userId: string | number
-): Promise<Boolean> {
-    return prisma.user.findUnique({
-        where: { id: parseInt(userId.toString()) }
-    }).then(user => {
-        return user ? true : false;
-    });
-}
+
 
 function hashKey(
     key: string

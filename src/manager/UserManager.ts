@@ -19,7 +19,7 @@ export class UserManager {
 
     async findOrCreateFromDiscord(discordUser: DiscordUser) {
         return await this.prismaClient.$transaction(async (tx) => {
-  
+
             let user = await tx.user.upsert({
                 where: { email: discordUser.email },
                 update: { user_name: discordUser.username },
@@ -46,6 +46,27 @@ export class UserManager {
 
             return user;
         });
+    }
+
+    async DoesUserExist(
+        userId: string | number
+    ): Promise<Boolean> {
+
+        return this.prismaClient.user.findUnique({
+            where: { id: parseInt(userId.toString()) }
+        }).then(user => {
+            return user ? true : false;
+        })
+    }
+
+    async getUserEmail(
+        userId: number
+    ): Promise<string | null> {
+        const user = await this.prismaClient.user.findUnique({
+            where: { id: userId },
+            select: { email: true }
+        });
+        return user ? user.email : null;
     }
 
 }

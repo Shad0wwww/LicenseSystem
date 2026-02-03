@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import getUserinformation from '../../../../../utils/Discord.js';
 import { DiscordUser } from '../../../../../types/DiscordUserType.js';
-
-
+import { UserManager } from '../../../../../manager/UserManager.js';
+import { prisma } from '../../../../../lib/prisma.js';
 
 export async function Callback(
     req: Request, 
@@ -26,6 +26,7 @@ export async function Callback(
         });
     }
 
+    const userManager = new UserManager(prisma);
 
     const discordUser = await getUserinformation(code) as DiscordUser;
 
@@ -37,7 +38,8 @@ export async function Callback(
 
     try {
 
-        var user = await req.app.locals.userManager.findOrCreateFromDiscord(discordUser);
+        var user = await userManager.findOrCreateFromDiscord(discordUser);
+
         const token = generateJsonWebToken(user.id);
 
         res.cookie('auth_token', token, {
@@ -56,7 +58,6 @@ export async function Callback(
         return res.status(500).send({ error: 'Error generating Discord Auth URL' });
     }
 }
-
 
 function generateJsonWebToken(userId: number): string {
     return jwt.sign(

@@ -52,10 +52,10 @@ model Activation {
   licenseId   Int
   activatedAt DateTime @default(now())
 
-  deviceInfo  String   @db.VarChar(255)
-  hwid        String?   @db.VarChar(255)
+  deviceInfo String  @db.VarChar(255)
+  hwid       String? @db.VarChar(255)
 
-  userId      Int
-  user        User     @relation(fields: [userId], references: [id])
-  license     License  @relation(fields: [licenseId], references: [id])
+  userId  Int
+  user    User    @relation(fields: [userId], references: [id])
+  license License @relation(fields: [licenseId], references: [id])
 }
